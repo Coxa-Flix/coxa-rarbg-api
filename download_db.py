@@ -1,24 +1,23 @@
-import requests
-import zipfile
-import io
 import os
+import urllib.request
+import zipfile
 
-# URL to download
-url = "https://ia803200.us.archive.org/zip_dir.php?path=/14/items/rarbg_db.zip"
-output_dir = "rarbg_db"
+DB_FILE = "rarbg_db.sqlite"
+ZIP_URL = "https://ia803200.us.archive.org/zip_dir.php?path=/14/items/rarbg_db.zip"
+ZIP_FILE = "rarbg_db.zip"
 
-try:
-    print(f"Downloading from: {url}")
-    response = requests.get(url, stream=True)
-    response.raise_for_status()
+def download_and_unzip():
+    if os.path.exists(DB_FILE):
+        print(f"{DB_FILE} already exists. Skipping download.")
+        return
 
-    # Read the zip file into memory
-    with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-        print(f"Extracting to ./{output_dir}")
-        z.extractall(output_dir)
+    print("Downloading database zip...")
+    urllib.request.urlretrieve(ZIP_URL, ZIP_FILE)
+    print("Unzipping...")
+    with zipfile.ZipFile(ZIP_FILE, 'r') as zip_ref:
+        zip_ref.extractall(".")
+    os.remove(ZIP_FILE)
+    print("Database ready.")
 
-    print("Download and extraction completed.")
-except requests.exceptions.RequestException as e:
-    print(f"Download error: {e}")
-except zipfile.BadZipFile as e:
-    print(f"Zip extraction error: {e}")
+if __name__ == "__main__":
+    download_and_unzip()
